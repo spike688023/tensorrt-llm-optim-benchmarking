@@ -18,7 +18,7 @@ fi
 # 2. 自動安裝必要套件 (如果還沒裝)
 echo "📦 正在檢查套件環境..."
 pip3 install --upgrade pip
-pip3 install -q "python-dotenv" "fastapi" "uvicorn" "torch" "transformers" "accelerate" "tritonclient[all]" "huggingface_hub"
+pip3 install -q "python-dotenv" "fastapi" "uvicorn" "torch" "transformers" "accelerate" "tritonclient[all]" "huggingface_hub" "pandas" "requests" "numpy"
 
 # 3. 執行登入
 echo "🔑 正在驗證 Hugging Face Token..."

@@ -12,13 +12,7 @@ if [ -f .env ]; then
     set -a; source .env; set +a
 fi
 
-if [ -z "$HF_TOKEN" ]; then
-    echo "⚠️  警告: 找不到 HF_TOKEN 變數。如果模型需要權限，可能會失敗。"
-    echo "👉 建議在 .env 內加入 HF_TOKEN=your_token_here"
-else
-    echo "✅ 偵測到 HF_TOKEN，正在執行自動登入..."
-    huggingface-cli login --token $HF_TOKEN --add-to-git-credential
-fi
+# Removed HF Token login as it is handled globally by auto_benchmark_hf.sh
 
 export URL="localhost:8000"
 export MODEL_NAME="llama-3.1-8b"
@@ -29,10 +23,9 @@ echo "Target Model: $MODEL_NAME"
 echo "Target URL:   $URL"
 echo "================================================"
 
-# 檢查 genai-perf 是否存在
-if ! command -v genai-perf &> /dev/null; then
-    echo "❌ 找不到 genai-perf 指令！"
-    echo "請確認是否已安裝 triton-client[all] 或在正確的 Docker 環境內。"
+# 檢查 custom_bench.py 是否存在
+if [ ! -f "custom_bench.py" ]; then
+    echo "❌ 找不到自訂跑分腳本 custom_bench.py！"
     exit 1
 fi
 
@@ -43,31 +36,13 @@ mkdir -p ./results
 # 測試 1：單次請求 (Latency 導向)
 # ----------------------------------------------
 echo "--- 正在測試：單人低延遲模式 (Concurrency=1) ---"
-genai-perf \
-    --model $MODEL_NAME \
-    --service-kind openai \
-    --url $URL \
-    --endpoint v1/chat/completions \
-    --concurrency 1 \
-    --num-prompts 5 \
-    --random-seed 42 \
-    --result-format markdown \
-    --output-dir ./results/concurrency_1
+python3 custom_bench.py --concurrency 1 --num-prompts 5 --output-dir ./results/concurrency_1
 
 # ----------------------------------------------
 # 測試 2：多併發請求 (Throughput 導向)
 # ----------------------------------------------
 echo "--- 正在測試：四人併發抗壓模式 (Concurrency=4) ---"
-genai-perf \
-    --model $MODEL_NAME \
-    --service-kind openai \
-    --url $URL \
-    --endpoint v1/chat/completions \
-    --concurrency 4 \
-    --num-prompts 20 \
-    --random-seed 42 \
-    --result-format markdown \
-    --output-dir ./results/concurrency_4
+python3 custom_bench.py --concurrency 4 --num-prompts 20 --output-dir ./results/concurrency_4
 
 echo "================================================"
 echo "✅ 測試完成！請查看 ./results 目錄下的報告。"
