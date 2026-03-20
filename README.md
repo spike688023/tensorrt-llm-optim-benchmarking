@@ -45,8 +45,7 @@ chmod +x auto_benchmark_hf.sh
 
 *   `auto_benchmark_hf.sh`: **一鍵自動化測試**，包含環境安裝、啟動伺服器與跑測試。
 *   `hf_baseline_server.py`: 使用原始 Hugging Face 跑的 FastAPI Server (OpenAI 相容)。
-*   `custom_bench.py`: 輕量級的純 Python 打流腳本（用於在沒有編譯 genai-perf 的環境下快速替換）。
-*   `run_benchmarks.sh`: 呼叫 `custom_bench.py` 進行不同 Concurrency 壓測。
+*   `run_benchmarks.sh`: 呼叫原廠 `genai-perf` (透過 `--service-kind openai`) 進行不同 Concurrency 壓測。
 *   `summarize_results.py`: 讀取 CSV 數據並輸出總結表格。
 *   `tensorrt-llm-optimization.md`: TensorRT-LLM 原理與部落格教學。
 

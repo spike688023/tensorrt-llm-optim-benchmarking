@@ -23,9 +23,10 @@ echo "Target Model: $MODEL_NAME"
 echo "Target URL:   $URL"
 echo "================================================"
 
-# 檢查 custom_bench.py 是否存在
-if [ ! -f "custom_bench.py" ]; then
-    echo "❌ 找不到自訂跑分腳本 custom_bench.py！"
+# 檢查 genai-perf 是否存在
+if ! command -v genai-perf &> /dev/null; then
+    echo "❌ 找不到 genai-perf 指令！"
+    echo "請確認是否在 NVIDIA Triton 專屬 Container 內。"
     exit 1
 fi
 
@@ -36,13 +37,29 @@ mkdir -p ./results
 # 測試 1：單次請求 (Latency 導向)
 # ----------------------------------------------
 echo "--- 正在測試：單人低延遲模式 (Concurrency=1) ---"
-python3 custom_bench.py --concurrency 1 --num-prompts 5 --output-dir ./results/concurrency_1
+genai-perf \
+    --model $MODEL_NAME \
+    --service-kind openai \
+    --url $URL \
+    --endpoint v1/chat/completions \
+    --concurrency 1 \
+    --num-prompts 5 \
+    --random-seed 42 \
+    --output-dir ./results/concurrency_1
 
 # ----------------------------------------------
 # 測試 2：多併發請求 (Throughput 導向)
 # ----------------------------------------------
 echo "--- 正在測試：四人併發抗壓模式 (Concurrency=4) ---"
-python3 custom_bench.py --concurrency 4 --num-prompts 20 --output-dir ./results/concurrency_4
+genai-perf \
+    --model $MODEL_NAME \
+    --service-kind openai \
+    --url $URL \
+    --endpoint v1/chat/completions \
+    --concurrency 4 \
+    --num-prompts 20 \
+    --random-seed 42 \
+    --output-dir ./results/concurrency_4
 
 echo "================================================"
 echo "✅ 測試完成！請查看 ./results 目錄下的報告。"
