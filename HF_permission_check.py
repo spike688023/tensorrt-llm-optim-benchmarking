@@ -1,9 +1,19 @@
-from huggingface_hub import model_info
+import os
+from huggingface_hub import model_info, login
+from dotenv import load_dotenv
 
-MODEL_ID = "meta-llama/Llama-3.1-8B-Instruct" # 或是 "Qwen/Qwen2.5-7B-Instruct"
+# 載入 .env
+load_dotenv()
+token = os.getenv("HF_TOKEN")
+
+if token:
+    login(token=token)
+    print("✅ 已從 .env 載入 Token！")
+
+MODEL_ID = "meta-llama/Llama-3.1-8B-Instruct"
 
 try:
     info = model_info(MODEL_ID)
-    print(f"✅ 權限確認！模型名稱：{info.id}")
+    print(f"✅ 權限驗證成功！模型：{info.id}")
 except Exception as e:
-    print(f"❌ 權限失敗或需要核准：{e}")
+    print(f"❌ 驗證失敗：{e}")

@@ -12,6 +12,7 @@ HF Baseline Server — 用原始 Hugging Face transformers 跑 Llama-3.1-8B-Inst
         -d '{"model": "llama-3.1-8b", "messages": [{"role": "user", "content": "Hello"}], "max_tokens": 50}'
 """
 
+import os
 import time
 import uuid
 from contextlib import asynccontextmanager
@@ -20,10 +21,18 @@ import torch
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from dotenv import load_dotenv
+from huggingface_hub import login
 
 # ──────────────────────────────────────────────
-# 設定區
+# 設定區：載入 .env 與登入
 # ──────────────────────────────────────────────
+load_dotenv()
+token = os.getenv("HF_TOKEN")
+if token:
+    login(token=token)
+    print("✅ 已從 .env 載入 Hugging Face Token")
+
 MODEL_ID = "meta-llama/Llama-3.1-8B-Instruct"
 
 # 偵測硬體裝置：優先 CUDA -> 其次 Mac MPS -> 最後 CPU

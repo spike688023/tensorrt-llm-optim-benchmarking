@@ -87,7 +87,6 @@ python convert_checkpoint.py --model_dir ./meta-llama/Llama-2-7b-chat-hf \
                              --output_dir ./tllm_checkpoint_1gpu_bf16 \
                              --dtype bfloat16
 
-# Corrected build command for trtllm-build
 trtllm-build --checkpoint_dir ./tllm_checkpoint_1gpu_bf16 \
             --output_dir ./tmp/llama/7B/trt_engines/bf16/1-gpu \
             --gpt_attention_plugin bfloat16 \
@@ -96,7 +95,7 @@ trtllm-build --checkpoint_dir ./tllm_checkpoint_1gpu_bf16 \
 
 The TensorRT compiler sweeps through the graph to choose the best kernel for each operation and identifies patterns for layer fusion (like FlashAttention).
 
-**Build Outputs in `./tmp/llama/7B/trt_engines/bf16/1-gpu`:**
+**Build Outputs in `/tmp/llama/7B/trt_engines/bf16/1-gpu`:**
 - `Llama_float16_tp1_rank0.engine`: The executable graph with model weights embedded.
 - `config.json`: Model structure and plugin information.
 - `model.cache`: Caches timing information for quicker successive builds.
@@ -119,8 +118,7 @@ Setup the model repository:
 # Clone the backend
 git clone -b release/0.8.0 https://github.com/triton-inference-server/tensorrtllm_backend.git
 cd tensorrtllm_backend
-mkdir -p all_models/inflight_batcher_llm/tensorrt_llm/1/
-cp ../tmp/llama/7B/trt_engines/bf16/1-gpu/* all_models/inflight_batcher_llm/tensorrt_llm/1/
+cp ../TensorRT-LLM/examples/llama/out/* all_models/inflight_batcher_llm/tensorrt_llm/1/
 ```
 
 Launch the Triton server:
