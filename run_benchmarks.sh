@@ -4,6 +4,22 @@
 # genai-perf 測試腳本 (針對 HF Baseline Server)
 # ──────────────────────────────────────────────
 
+# ──────────────────────────────────────────────
+# 1. 檢查與載入環境變數 (.env)
+# ──────────────────────────────────────────────
+if [ -f .env ]; then
+    echo "📂 偵測到 .env 檔案，正在載入變數..."
+    set -a; source .env; set +a
+fi
+
+if [ -z "$HF_TOKEN" ]; then
+    echo "⚠️  警告: 找不到 HF_TOKEN 變數。如果模型需要權限，可能會失敗。"
+    echo "👉 建議在 .env 內加入 HF_TOKEN=your_token_here"
+else
+    echo "✅ 偵測到 HF_TOKEN，正在執行自動登入..."
+    huggingface-cli login --token $HF_TOKEN --add-to-git-credential
+fi
+
 export URL="localhost:8000"
 export MODEL_NAME="llama-3.1-8b"
 
