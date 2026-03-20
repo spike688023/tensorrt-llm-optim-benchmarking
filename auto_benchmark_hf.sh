@@ -22,7 +22,7 @@ pip install -q "python-dotenv" "fastapi" "uvicorn" "torch" "transformers" "accel
 
 # 3. 執行登入
 echo "🔑 正在驗證 Hugging Face Token..."
-huggingface-cli login --token $HF_TOKEN --add-to-git-credential
+python -m huggingface_hub.commands.user login --token $HF_TOKEN --add-to-git-credential
 
 # 4. 在背景啟動 Server
 echo "🚀 正在啟動 HF Baseline Server (背景執行)..."
