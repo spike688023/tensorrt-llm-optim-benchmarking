@@ -31,25 +31,21 @@ def run_request():
     token_times = []
     
     try:
-        with requests.post(URL, json=payload, stream=True, timeout=120) as r:
-            for line in r.iter_lines():
-                if line and line.startswith(b"data:"):
-                    now = time.time()
-                    if first_token_time is None:
-                        first_token_time = now - start_time
-                    token_times.append(now)
-                    
+        # FastAPI 端點目前沒有實作 stream，因此改為直接接收完整 JSON
+        r = requests.post(URL, json=payload, timeout=120)
         total_time = time.time() - start_time
-        num_tokens = len(token_times)
         
-        if first_token_time is not None:
-            ttfts.append(first_token_time * 1000) # ms
-        if len(token_times) > 1:
-            # ITL: 每個 token 之間的平均延遲
-            itl = np.mean([token_times[i] - token_times[i-1] for i in range(1, len(token_times))])
-            itls.append(itl * 1000) # ms
-            # 單一連線吞吐量 (Tokens/Sec)
-            throughputs.append(num_tokens / total_time) 
+        if r.status_code == 200:
+            res = r.json()
+            num_tokens = res.get("usage", {}).get("completion_tokens", 0)
+            
+            # 因為沒有 stream，TTFT (首字延遲) 只能當作總時間
+            ttfts.append(total_time * 1000) 
+            # 沒有 stream 就無法精確測量每個字之間的隔閡，ITL 設為 0
+            if num_tokens > 0:
+                throughputs.append(num_tokens / total_time) 
+        else:
+            print(f"Server error: {r.status_code} {r.text}")
     except Exception as e:
         print(f"Request failed: {e}")
 
