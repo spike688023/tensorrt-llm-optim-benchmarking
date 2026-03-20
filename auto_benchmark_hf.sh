@@ -33,7 +33,7 @@ SERVER_PID=$!
 echo "⏳ 等待 Server 初始化與載入模型 (這可能需要幾分鐘，取決於下載速度)..."
 MAX_RETRIES=60
 RETRY_COUNT=0
-until $(curl --output /dev/null --silent --head --fail http://localhost:8000/health); do
+until $(curl --output /dev/null --silent --fail http://localhost:8000/health); do
     printf '.'
     sleep 5
     RETRY_COUNT=$((RETRY_COUNT+1))
