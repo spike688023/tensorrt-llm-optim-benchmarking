@@ -1,38 +1,59 @@
-最方便且成本效益最高（CP 值最高）的環境，我推薦這三個方案，按推薦程度排序：
+# LLM Inference Benchmarking: Hugging Face vs. TensorRT-LLM
 
-### 1. RunPod (最推薦：開發者首選)
-這是目前跑 TensorRT-LLM 範例最輕鬆的地方。
-*   **優點**：
-    *   可以直接租用 **NVIDIA L4 (約 $0.35/hr)** 或 **A100 (約 $1.1/hr)**，這兩張最適合跑。
-    *   提供 **Docker 支援** (你可以直接套用部落格說的 `nvidia/cuda` 鏡像)。
-    *   頻寬極快，下載 Llama 權重（幾十 GB）只要幾分鐘。
-*   **方便點**：選完 GPU 後，直接掛載一個 "PyTorch" 範本，進去就是現成的 Linux 環境，驅動都裝好了。
+本專案旨在提供一個標準化的 LLM 推理性能測試框架，比較 Hugging Face 原始模型與 NVIDIA TensorRT-LLM 優化後的效能差異。
 
-### 2. Google Cloud (GCP) 的 Deep Learning VM
-既然你之前問過 **GKE**，先在 GCP 的 VM 跑熟最順手。
-*   **優點**：
-    *   建立 VM 時選擇 **"Deep Learning VM"** 映像檔 (Image)，它預裝了 NVIDIA Driver、Docker 和 CUDA。
-    *   建議開一規格為 `g2-standard-8` (內含一張 **L4 GPU**) 的虛擬機。
-*   **方便點**：未來你可以直接把這個 VM 上的腳本或 Dockerfile 搬到 GKE 上，環境幾乎一樣。
+## 🚀 快速開始 (Hugging Face Baseline 測試)
 
-### 3. Lambda Labs
-*   **優點**：價格通常比 GCP/AWS 便宜，且介面極度簡潔（按下啟動，SSH 進去）。
-*   **環境**：預裝了所有的深度學習工具包。
+如果你要在雲端執行測試，我最推薦使用 **RunPod**，因為它對 NVIDIA GPU 的支援最完整且 CP 值最高。
+
+### 1. 租用 GPU (RunPod)
+*   **連結：** [RunPod GPU Cloud](https://www.runpod.io/console/gpu-browse)
+*   **建議規格：**
+    *   **GPU:** NVIDIA **L4 (24GB)** 或 **A10 (24GB)**
+    *   **RAM:** 30GB+
+    *   **Disk:** 100GB+
+
+### 2. 環境設定與一鍵測試
+登入機器後，請依序執行以下指令：
+
+```bash
+# A. 下載專案
+git clone https://github.com/spike688023/tensorrt-llm-optim-benchmarking.git
+cd tensorrt-llm-optim-benchmarking
+
+# B. 設定 Hugging Face Token (用於下載 Llama-3.1-8B)
+echo "HF_TOKEN=hf_your_token_here" > .env
+
+# C. 執行一鍵自動化測試
+chmod +x auto_benchmark_hf.sh
+./auto_benchmark_hf.sh
+```
 
 ---
 
-### 我的「專家建議」：
-如果你只是想**快速體驗**這個範例：
-1.  去 **RunPod** 租一台 **1x NVIDIA L4**。
-2.  硬碟空間（Disk Space）記得給到 **100GB** 以上（為了放 Llama 權重和編譯出的 Engine）。
-3.  直接貼入 @[tensorrt-llm-optimization.md] 裡面更新過的指令。
+## 📊 關鍵量測指標 (Metrics)
 
-> [!TIP]
-> **GPU 選擇小知識：**
-> *   **L4 GPU (24GB VRAM)**：跑 Llama-7B / 13B 的**最佳 CP 值選擇**。
-> *   **A100 (40GB/80GB)**：如果你要試更大的模型或追求極速時再用。
-> *   **不要用 T4**：雖然便宜，但不支援 TensorRT-LLM 很多新功能。
+本工具會自動抓取以下 LLM 推理核心指標：
 
-**你需要準備：**
-*   一張信用卡（儲值個 $5-10 美金就夠玩很久）。
-*   Hugging Face 的 **Read Token** (去下載 Llama)。
+1.  **TTFT (Time To First Token)**: 首字延遲 (ms)
+2.  **ITL (Inter-Token Latency)**: 字間平均延遲 (ms)
+3.  **Throughput (TPS)**: 每秒生成 Token 數量
+
+---
+
+## 🛠️ 專案檔案說明
+
+*   `auto_benchmark_hf.sh`: **一鍵自動化測試**，包含環境安裝、啟動伺服器與跑測試。
+*   `hf_baseline_server.py`: 使用原始 Hugging Face 跑的 FastAPI Server (OpenAI 相容)。
+*   `run_benchmarks.sh`: 呼叫 `genai-perf` 進行壓測。
+*   `summarize_results.py`: 讀取 CSV 數據並輸出總結表格。
+*   `tensorrt-llm-optimization.md`: TensorRT-LLM 原理與部落格教學。
+
+---
+
+## 🔒 隱私與安全
+請確保你的 `.env` 被加入 `.gitignore` 且不要將 HF Token 推送到公共倉庫。本專案預設已將 `.env` 排除。
+
+---
+
+**Next Steps:** 在跑完 Baseline 之後，我們將進入 TensorRT-LLM 編譯階段，並進行效能對比。
