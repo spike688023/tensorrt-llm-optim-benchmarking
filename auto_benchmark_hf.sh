@@ -17,16 +17,16 @@ fi
 
 # 2. 自動安裝必要套件 (如果還沒裝)
 echo "📦 正在檢查套件環境..."
-pip install --upgrade pip
-pip install -q "python-dotenv" "fastapi" "uvicorn" "torch" "transformers" "accelerate" "tritonclient[all]" "huggingface_hub"
+pip3 install --upgrade pip
+pip3 install -q "python-dotenv" "fastapi" "uvicorn" "torch" "transformers" "accelerate" "tritonclient[all]" "huggingface_hub"
 
 # 3. 執行登入
 echo "🔑 正在驗證 Hugging Face Token..."
-python -m huggingface_hub.commands.user login --token $HF_TOKEN --add-to-git-credential
+python3 -m huggingface_hub.commands.user login --token $HF_TOKEN --add-to-git-credential
 
 # 4. 在背景啟動 Server
 echo "🚀 正在啟動 HF Baseline Server (背景執行)..."
-python hf_baseline_server.py > server.log 2>&1 &
+python3 hf_baseline_server.py > server.log 2>&1 &
 SERVER_PID=$!
 
 # 5. 等待 Server 準備好 (Polling /health endpoint)
@@ -56,7 +56,7 @@ kill $SERVER_PID
 
 # 8. 顯示最終總結報告
 echo "📈 正在生成結果總結..."
-python summarize_results.py
+python3 summarize_results.py
 
 echo "================================================"
 echo "🎉 所有測試已完成！詳細數據請參考 ./results 目錄"
